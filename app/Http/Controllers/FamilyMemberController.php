@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Requests\FamilyMemberStoreRequest;
+use App\Http\Requests\FamilyMemberUpdateRequest;
 use App\Http\Resources\FamilyMemberResource;
 use App\Http\Resources\PaginateResource;
 use App\Interface\FamilyMemberRepositoryInterface;
@@ -56,9 +58,17 @@ class FamilyMemberController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(FamilyMemberStoreRequest $request)
     {
-        //
+        $request = $request->validated();
+
+        try{
+            $familyMember = $this->familyMemberRepository->create($request);
+
+            return ResponseHelper::jsonResponse(true, 'Data Anggota Keluarga Berhasil Ditambahkan', new FamilyMemberResource($familyMember), 201);
+        }catch (\Exception $e) {
+            return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
+        }
     }
 
     /**
@@ -66,15 +76,41 @@ class FamilyMemberController extends Controller
      */
     public function show(string $id)
     {
-        //
+        try{
+            $familyMember = $this->familyMemberRepository->getById($id);
+
+            if(!$familyMember) {
+                return ResponseHelper::jsonResponse(false, 'Anggota Keluarga Tidak Ditemukan', null, 404);
+            }
+
+            return ResponseHelper::jsonResponse(true, 'Data Anggota Keluarga Berhasil Ditemukan', new FamilyMemberResource($familyMember), 200);
+            
+        }catch (\Exception $e) {
+            return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(FamilyMemberUpdateRequest $request, string $id)
     {
-        //
+        $request = $request->validated();
+
+        try{
+             $familyMember = $this->familyMemberRepository->getById($id);
+
+            if(!$familyMember) {
+                return ResponseHelper::jsonResponse(false, 'Anggota Keluarga Tidak Ditemukan', null, 404);
+            }
+
+            $familyMember = $this->familyMemberRepository->update($id, $request);
+
+            return ResponseHelper::jsonResponse(true, 'Data Anggota Keluarga Berhasil Diupdate', new FamilyMemberResource($familyMember), 200);
+
+        }catch (\Exception $e) {
+            return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
+        }
     }
 
     /**
@@ -82,6 +118,19 @@ class FamilyMemberController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try{
+            $familyMember = $this->familyMemberRepository->getById($id);
+
+            if(!$familyMember) {
+                return ResponseHelper::jsonResponse(false, 'Anggota Keluarga Tidak Ditemukan', null, 404);
+            }
+
+            $this->familyMemberRepository->delete($id);
+
+            return ResponseHelper::jsonResponse(true, 'Data Anggota Keluarga Berhasil Dihapus',null, 200);
+            
+        }catch (\Exception $e) {
+            return ResponseHelper::jsonResponse(false, $e->getMessage(), null, 500);
+        }
     }
 }
