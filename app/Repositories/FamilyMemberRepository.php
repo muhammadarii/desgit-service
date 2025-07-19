@@ -83,7 +83,7 @@ class FamilyMemberRepository implements FamilyMemberRepositoryInterface
         return $familyMember;
       }catch (\Exception $e) {
         DB::rollBack();
-        throw $e;
+        throw new Exception($e->getMessage());
       }
     }
 
